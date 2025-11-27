@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Jogo da Velha</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #F2F2F2; /* neutro */
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        h1 { text-align: center; color: #333; }
+
+        /* GRID PRINCIPAL: tabuleiro à esquerda, IA à direita */
+        .main-grid {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        /* TABULEIRO */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-gap: 12px;
+            justify-content: center;
+        }
+
+        .cell {
+            width: 120px;
+            height: 120px;
+            background: #FFFFFF;
+            font-size: 60px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            user-select: none;
+            color: #333;
+        }
+
+        /* X e O neutros */
+        .cell.x { color: #555; }
+        .cell.o { color: #888; }
+
+        /* STATUS */
+        .status {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            color: #444;
+        }
+
+        /* BOTÕES */
+        .btns {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 22px;
+            margin: 5px;
+            border: none;
+            background: #555; /* neutro escuro */
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* BOX DA IA — agora ao lado do tabuleiro */
+        .log-box {
+            width: 320px;
+            background: #FFFFFF;
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            height: fit-content;
+        }
+
+        .log-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        pre {
+            background: #EFEFEF;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            color: #444;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Jogo da Velha</h1>
+
+    <!-- STATUS -->
+    <div id="statusBox" class="status"
+         th:text="${msg != null && msg != '' ? msg : 'Sua vez! Clique em uma célula vazia.'}">
+    </div>
+
+    <!-- GRID GERAL: TABULEIRO + IA -->
+    <div class="main-grid">
+
+        <!-- TABULEIRO -->
+        <div>
+            <div class="board">
+
+                <!-- As 9 células (mantidas exatamente iguais) -->
+                <div class="cell" id="c0" onclick="play(0)"
+                     th:classappend="${board[0]==1} ? ' x' : (${board[0]==2} ? ' o' : '')"
+                     th:utext="${board[0]==1} ? 'X' : (${board[0]==2} ? 'O' : '&nbsp;')"></div>
+
+                <div class="cell" id="c1" onclick="play(1)"
+                     th:classappend="${board[1]==1} ? ' x' : (${board[1]==2} ? ' o' : '')"
+                     th:utext="${board[1]==1} ? 'X' : (${board[1]==2} ? 'O' : '&nbsp;')"></div>
+
+                <div class="cell" id="c2" onclick="play(2)"
+                     th:classappend="${board[2]==1} ? ' x' : (${board[2]==2} ? ' o' : '')"
+                     th:utext="${board[2]==1} ? 'X' : (${board[2]==2} ? 'O' : '&nbsp;')"></div>
+
+                <div class="cell" id="c3" onclick="play(3)"
+                     th:classappend="${board[3]==1} ? ' x' : (${board[3]==2} ? ' o' : '')"
+                     th:utext="${board[3]==1} ? 'X' : (${board[3]==2} ? 'O' : '&nbsp;')"></div>
+
+                <div class="cell" id="c4" onclick="play(4)"
+                     th:classappend="${board[4]==1} ? ' x' : (${board[4]==2} ? ' o' : '')"
+                     th:utext="${board[4]==1} ? 'X' : (${board[4]==2} ? 'O' : '&nbsp;')"></div>
+
+                <div class="cell" id="c5" onclick="play(5)"
+                     th:classappend="${board[5]==1} ? ' x' : (${board[5]==2} ? ' o' : '')"
+                     th:utext="${board[5]==1} ? 'X' : (${board[5]==2} ? 'O' : '&nbsp;')"></div>
+
+                <div class="cell" id="c6" onclick="play(6)"
+                     th:classappend="${board[6]==1} ? ' x' : (${board[6]==2} ? ' o' : '')"
+                     th:utext="${board[6]==1} ? 'X' : (${board[6]==2} ? 'O' : '&nbsp;')"></div>
+
+                <div class="cell" id="c7" onclick="play(7)"
+                     th:classappend="${board[7]==1} ? ' x' : (${board[7]==2} ? ' o' : '')"
+                     th:utext="${board[7]==1} ? 'X' : (${board[7]==2} ? 'O' : '&nbsp;')"></div>
+
+                <div class="cell" id="c8" onclick="play(8)"
+                     th:classappend="${board[8]==1} ? ' x' : (${board[8]==2} ? ' o' : '')"
+                     th:utext="${board[8]==1} ? 'X' : (${board[8]==2} ? 'O' : '&nbsp;')"></div>
+            </div>
+
+            <!-- BOTÕES -->
+            <div class="btns">
+                <button onclick="submitBoard()">Enviar jogada</button>
+
+                <form method="get" th:action="@{/}" style="display:inline;">
+                    <button type="submit" style="background:#666">Reiniciar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- LOG DA IA - AGORA À DIREITA -->
+        <div class="log-box">
+            <div class="log-title">Resposta bruta do Gemini:</div>
+            <pre th:text="${iaRaw}">nenhuma</pre>
+
+            <div class="log-title">JSON limpo:</div>
+            <pre th:text="${iaJson}">nenhum</pre>
+        </div>
+
+    </div> <!-- fim main-grid -->
+
+    <!-- FORM OCULTO -->
+    <form id="formPlay" method="post" th:action="@{/jogar}" style="display:none;">
+        <input type="hidden" id="vetorInput" name="vetor">
+        <input type="hidden" id="winnerMsg" th:value="${msg}">
+    </form>
+
+</div>
+
+<script>
+    function play(pos) {
+        let winner = document.getElementById("winnerMsg").value;
+        if (winner !== "") return;
+
+        let cell = document.getElementById("c" + pos);
+
+        if (cell.innerText.trim() === "") {
+            cell.innerHTML = "X";
+            cell.classList.add("x");
+            cell.classList.remove("o");
+        }
+    }
+
+    function submitBoard() {
+        let board = [];
+
+        for (let i = 0; i < 9; i++) {
+            let txt = document.getElementById("c" + i).innerText.trim();
+            if (txt === "") board.push(0);
+            else if (txt === "X") board.push(1);
+            else if (txt === "O") board.push(2);
+        }
+
+        document.getElementById("vetorInput").value = JSON.stringify(board);
+        document.getElementById("formPlay").submit();
+    }
+
+    // Mantém as classes após a resposta do backend
+    window.addEventListener("load", () => {
+        for (let i = 0; i < 9; i++) {
+            let el = document.getElementById("c" + i);
+            let t = el.innerText.trim();
+            el.classList.remove("x", "o");
+            if (t === "X") el.classList.add("x");
+            if (t === "O") el.classList.add("o");
+        }
+    });
+</script>
+
+</body>
+</html>
